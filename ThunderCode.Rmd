@@ -31,5 +31,11 @@ shotData %>% group_by(team, Type) %>% summarise(count = n(), `FG%` = sum(fgmade)
 #Creating eFG% from FG%
 GroupedShots$`eFG%` <- ifelse(GroupedShots$Type == "C3" | GroupedShots$Type == "NC3", GroupedShots$`FG%`*1.5, GroupedShots$`FG%`)
 
+#Calculating total shots for each team
+GroupedShots %>% group_by(team) %>% summarise(TotalShots = sum(count)) -> TotalShots
+
+#Joining Data and getting shot%
+GroupedShots %>% left_join(TotalShots, by = "team") %>% mutate(`Shot%` = count/TotalShots)-> FinalTable
+
 ```
 
