@@ -1,0 +1,35 @@
+---
+title: "OKCApp"
+author: "Chase Seibold"
+date: "1/16/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+#Reading in data
+read_csv("shots_data.csv") -> shotData
+
+#Finding Distance from rim of shot
+shotData$distance <- sqrt((shotData$x^2) + (shotData$y^2))
+
+#Creating a variable for shot classification
+shotData$Type <- ifelse(shotData$y <= 7.8 & shotData$x > 22 | shotData$y <= 7.8 & shotData$x < -22, "C3",
+                        ifelse(shotData$y > 7.8 & shotData$distance > 23.75, "NC3", "2P"))
+
+#Verifying the shot type classifications
+ggplot(shotData, aes(x = x, y = y, color = Type)) + geom_point()
+
+#Grouping shots types and teams to get summary stats
+shotData %>% group_by(team, Type) %>% summarise(count = n(), `FG%` = sum(fgmade)/count) -> GroupedShots
+
+#Creating eFG% from FG%
+GroupedShots$`eFG%` <- ifelse(GroupedShots$Type == "C3" | GroupedShots$Type == "NC3", GroupedShots$`FG%`*1.5, GroupedShots$`FG%`)
+
+```
+
